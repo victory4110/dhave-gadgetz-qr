@@ -13,6 +13,7 @@ const { initializePayment, verifyPayment } = require('../services/paystack.servi
 async function getAccountDetails(req, res) {
     try {
         const { accountNumber } = req.params;
+        console.log(`[API] Fetching bank details for account: ${accountNumber}`);
         const account = await Account.findOne({ accountNumber });
 
         if (!account) {

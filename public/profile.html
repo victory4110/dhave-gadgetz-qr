@@ -219,11 +219,24 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const acc = urlParams.get('acc');
+        const errorEl = document.getElementById('error');
 
         async function init() {
-            if (!acc) return;
+            console.log("Profile page initialized for account:", acc);
+
+            if (!acc) {
+                errorEl.innerHTML = "No account number provided in the link.";
+                errorEl.style.display = 'block';
+                return;
+            }
+
             try {
                 const response = await fetch(`/api/accounts/details/${acc}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+
                 const result = await response.json();
 
                 if (result.success) {
@@ -252,10 +265,16 @@
                         setTimeout(() => document.getElementById('copy-btn').textContent = "COPY", 2000);
                     };
                 } else {
-                    document.getElementById('error').style.display = 'block';
+                    errorEl.innerHTML = result.message || "Could not find account details.";
+                    errorEl.style.display = 'block';
                 }
             } catch (e) {
-                document.getElementById('error').style.display = 'block';
+                console.error("Fetch error:", e);
+                errorEl.innerHTML = `
+                    <span style="display:block; margin-bottom:10px;">Connection Failed.</span>
+                    <small style="opacity:0.6; font-weight:normal;">Make sure your phone is on the same Wi-Fi as your computer.</small>
+                `;
+                errorEl.style.display = 'block';
             }
         }
         init();
