@@ -1,0 +1,20 @@
+[
+    {
+        "accountNumber": "1234567890",
+        "accountName": "John Doe",
+        "bank": "First Bank",
+        "email": "john.doe@example.com"
+    },
+    {
+        "accountNumber": "0987654321",
+        "accountName": "Jane Smith",
+        "bank": "GTBank",
+        "email": "jane.smith@example.com"
+    },
+    {
+        "accountNumber": "1122334455",
+        "accountName": "Acme Corp",
+        "bank": "Zenith Bank",
+        "email": "payments@acmecorp.com"
+    }
+]

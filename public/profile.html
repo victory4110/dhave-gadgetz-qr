@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Profile | QR Pay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 80%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .profile-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 3rem 2rem;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.6);
+            animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .avatar {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .verified-badge {
+            background: rgba(34, 197, 94, 0.1);
+            color: #4ade80;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-weight: 800;
+            font-size: 1.6rem;
+            margin-bottom: 0.2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bank-label {
+            color: #818cf8;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+            display: block;
+        }
+
+        .detail-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+            border-radius: 20px;
+            text-align: left;
+            margin-bottom: 2rem;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+
+        .detail-box:hover {
+            border-color: var(--primary);
+        }
+
+        .label {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: white;
+            display: block;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .copy-btn:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 1.1rem;
+            background: white;
+            color: var(--bg);
+            border: none;
+            border-radius: 16px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        #error {
+            display: none;
+            color: #f87171;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="profile-card">
+        <div class="verified-badge">Verified Account</div>
+        <div class="avatar" id="avatar">D</div>
+        <h2 id="heading">DHAVE GADGETZ</h2>
+        <span class="bank-label">Bank Details Information</span>
+
+        <div class="detail-box">
+            <span class="label">Account Name</span>
+            <span class="value" id="name" style="font-family: inherit; font-size: 1.2rem;">Fetching...</span>
+        </div>
+
+        <div class="detail-box">
+            <span class="label">Bank Name</span>
+            <span class="value" id="bank" style="font-family: inherit; font-size: 1.2rem;">Fetching...</span>
+        </div>
+
+        <div class="detail-box">
+            <span class="label">Account Number</span>
+            <span class="value" id="number">5199540974</span>
+            <button class="copy-btn" id="copy-btn">COPY</button>
+        </div>
+
+        <p id="error">
+            <span style="display:block; margin-bottom:10px;">Details not found or Server unreachable.</span>
+            <small style="opacity:0.6; font-weight:normal;">If you are on a phone, ensure you aren't using
+                "localhost".</small>
+        </p>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const acc = urlParams.get('acc');
+
+        async function init() {
+            if (!acc) return;
+            try {
+                const response = await fetch(`/api/accounts/details/${acc}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const d = result.data;
+                    document.getElementById('name').textContent = d.accountName;
+                    document.getElementById('bank').textContent = d.bank;
+                    document.getElementById('number').textContent = d.accountNumber;
+                    document.getElementById('avatar').textContent = d.accountName[0];
+
+                    document.getElementById('copy-btn').onclick = () => {
+                        const text = d.accountNumber;
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(text);
+                        } else {
+                            const textArea = document.createElement("textarea");
+                            textArea.value = text;
+                            textArea.style.position = "fixed";
+                            textArea.style.left = "-9999px";
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+                            try { document.execCommand('copy'); } catch (err) { }
+                            document.body.removeChild(textArea);
+                        }
+                        document.getElementById('copy-btn').textContent = "DONE!";
+                        setTimeout(() => document.getElementById('copy-btn').textContent = "COPY", 2000);
+                    };
+                } else {
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (e) {
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        init();
+    </script>
+</body>
+
+</html>
