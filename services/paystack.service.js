@@ -6,10 +6,10 @@ const PAYSTACK_BASE = 'https://api.paystack.co';
  * Initialise a Paystack payment transaction.
  *
  * @param {object} opts
- * @param {string} opts.email       - payer's email
- * @param {number} opts.amount      - amount in kobo (NGN × 100)
- * @param {string} opts.reference   - our unique QR reference
- * @param {string} opts.callbackUrl - where Paystack redirects after payment
+ * @param {string} opts.email
+ * @param {number} opts.amount
+ * @param {string} opts.reference
+ * @param {string} opts.callbackUrl 
  * @returns {Promise<{authorizationUrl: string, accessCode: string}>}
  */
 async function initializePayment({ email, amount, reference, callbackUrl }) {
@@ -42,8 +42,8 @@ async function initializePayment({ email, amount, reference, callbackUrl }) {
 /**
  * Verify a completed Paystack transaction.
  *
- * @param {string} reference - Paystack reference to verify
- * @returns {Promise<object>} - Paystack transaction data object
+ * @param {string} reference 
+ * @returns {Promise<object>} 
  */
 async function verifyPayment(reference) {
     const response = await axios.get(
@@ -55,7 +55,7 @@ async function verifyPayment(reference) {
         }
     );
 
-    return response.data.data; // { status, amount, reference, ... }
+    return response.data.data;
 }
 
 module.exports = { initializePayment, verifyPayment };

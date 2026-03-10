@@ -1,45 +1,30 @@
-require('dotenv').config();
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
+require('dotenv').config();
 
-const accountRoutes = require('./routes/account.routes');
+// Pre-load Models
+const Account = require('./models/Account');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Database Connection Middleware (Robust for Serverless)
+let cachedDb = null;
+async function connectToDatabase() {
+    if (cachedDb) {
+        return cachedDb;
+    }
 
-app.use(cors());
-app.use(express.static('public'));
-
-app.use('/api/webhooks/paystack', express.raw({ type: 'application/json' }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use('/api', accountRoutes);
-
-app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-app.use((_req, res) => {
-    res.status(404).json({ success: false, message: 'Route not found.' });
-});
-app.use((err, _req, res, _next) => {
-    console.error('Unhandled Error', err);
-    res.status(500).json({ success: false, message: 'Unexpected server error.' });
-});
-
-async function start() {
+    console.log("=> Connecting to database");
     try {
-        await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/qr-payment');
-        console.log('Connected to MongoDB');
-        const Account = require('./models/Account');
-        const fs = require('fs');
-        const path = require('path');
+        const db = await mongoose.connect(process.env.MONGODB_URI, {
+            serverSelectionTimeoutMS: 5000,
+        });
 
-        // Ensure the Master Account (DHAVE GADGETZ) exists
+        // Ensure Master Account exists right after connection
         await Account.findOneAndUpdate(
             { accountNumber: "5199540974" },
             {
@@ -49,27 +34,47 @@ async function start() {
             },
             { upsert: true }
         );
-        console.log('✅  Master Account (DHAVE GADGETZ) is ready.');
+        console.log("✅ Master account verified.");
 
-        const count = await Account.countDocuments();
-        if (count <= 1) { // 1 because we just added/updated the master
-            const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'accounts.json'), 'utf8'));
-            // Filter out the master if it's already in the json to avoid duplicates
-            const filteredData = data.filter(acc => acc.accountNumber !== "5199540974");
-            if (filteredData.length > 0) {
-                await Account.insertMany(filteredData);
-                console.log('🌱  Database seeded with additional accounts');
-            }
-        }
-
-        app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-            console.log(`Health check → http://localhost:${PORT}/health`);
-        });
+        cachedDb = db;
+        return db;
     } catch (err) {
-        console.error('Failed to connect to MongoDB:', err.message);
-        process.exit(1);
+        console.error("Database connection failed:", err.message);
+        throw err;
     }
 }
 
-start();
+// Global middleware to connect to DB
+app.use(async (req, res, next) => {
+    try {
+        await connectToDatabase();
+        next();
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Server connection failed. Check your database URI." });
+    }
+});
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// API Routes
+const accountRoutes = require('./routes/account.routes');
+app.use('/api', accountRoutes);
+
+// Health Check
+app.get('/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// For Vercel, serve static files explicitly via Express if not handled by vercel.json
+app.use(express.static('public'));
+
+// Local Server Start Logic
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running locally on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

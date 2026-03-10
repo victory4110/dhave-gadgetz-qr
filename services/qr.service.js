@@ -1,10 +1,7 @@
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 
-/**
- * Generate a cryptographically random token to use as the QR reference.
- * Never embed the raw account number in the QR code.
- */
+
 function generateReference() {
     return `QR-${crypto.randomBytes(16).toString('hex').toUpperCase()}`;
 }
@@ -25,8 +22,8 @@ function buildPaymentUrl(reference) {
 /**
  * Generate a QR code as a base64 data URL.
  *
- * @param {string} reference - opaque payment reference
- * @returns {Promise<string>} - data:image/png;base64,... string
+ * @param {string} reference 
+ * @returns {Promise<string>} 
  */
 async function generateQRCode(reference) {
     const paymentUrl = buildPaymentUrl(reference);
