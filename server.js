@@ -17,8 +17,6 @@ async function connectToDatabase() {
     if (cachedDb) {
         return cachedDb;
     }
-
-    console.log("=> Connecting to database");
     try {
         const db = await mongoose.connect(process.env.MONGODB_URI, {
             serverSelectionTimeoutMS: 5000,
@@ -34,12 +32,17 @@ async function connectToDatabase() {
             },
             { upsert: true }
         );
-        console.log("✅ Master account verified.");
+
+        if (!process.env.VERCEL) {
+            console.log('✅  Master Account (DHAVE GADGETZ) is ready.');
+        }
 
         cachedDb = db;
         return db;
     } catch (err) {
-        console.error("Database connection failed:", err.message);
+        if (!process.env.VERCEL) {
+            console.error("Failed to connect to MongoDB:", err.message);
+        }
         throw err;
     }
 }
@@ -67,13 +70,25 @@ app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// For Vercel, serve static files explicitly via Express if not handled by vercel.json
-app.use(express.static('public'));
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicitly serve index.html for the root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Local Server Start Logic
 if (!process.env.VERCEL) {
-    app.listen(PORT, () => {
-        console.log(`Server running locally on http://localhost:${PORT}`);
+    app.listen(PORT, async () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Health check → http://localhost:${PORT}/health`);
+        try {
+            await connectToDatabase();
+            console.log('Connected to MongoDB');
+        } catch (err) {
+            // Error already logged in connectToDatabase
+        }
     });
 }
 
